@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+import os
+
+private let logger = Logger(subsystem: Bundle.main.identifier, category: "SongBook")
 
 @main
 struct spevnik_casdApp: App {
@@ -19,6 +22,8 @@ struct spevnik_casdApp: App {
     
     @AppStorage("org.valesoft.songbook.version") private var songBookVersion: String?
 
+    @State private var loadFailed = false
+
     var body: some Scene {
         WindowGroup {
             NavigationStack {
@@ -27,20 +32,26 @@ struct spevnik_casdApp: App {
             .task {
                 updateSongBookIfNewUpdate()
             }
+            .alert("Nepodarilo sa načítať spevník", isPresented: $loadFailed) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Prosím, skúste aplikáciu reštartovať. Ak problém pretrváva, kontaktujte nás na milan.nosal@gmail.com.")
+            }
         }
         .modelContainer(sharedModelContainer)
     }
-    
+
     @MainActor
     private func updateSongBookIfNewUpdate() {
         guard songBookVersion != Bundle.main.appBuild else {
             return
         }
         guard let songs = parseSongsFromArchive() else {
-            // TODO: Report error
+            logger.error("Failed to parse songs from bundled archive")
+            loadFailed = true
             return
         }
-        
+
         var currentSongs: FetchDescriptor<Song> = FetchDescriptor<Song>(
             predicate: nil,
             sortBy: [SortDescriptor<Song>(\.number)]
@@ -49,11 +60,16 @@ struct spevnik_casdApp: App {
         currentSongs.includePendingChanges = true
 
         let context = sharedModelContainer.mainContext
-        guard let results = try? context.fetch(currentSongs) else {
-            // TODO: report error
+        let results: [Song]
+        do {
+            results = try context.fetch(currentSongs)
+        } catch {
+            logger.error("Failed to fetch existing songs: \(error, privacy: .public)")
+            loadFailed = true
             return
         }
         let resultsAsHash = Dictionary(results.map({ ($0.number, $0) }), uniquingKeysWith: { a, b in a })
+        let incomingNumbers = Set(songs.map(\.number))
         for song in songs {
             if let result = resultsAsHash[song.number] {
                 result.update(from: song)
@@ -61,6 +77,12 @@ struct spevnik_casdApp: App {
                 context.insert(Song(from: song))
             }
         }
+        // Remove songs that are no longer present in the bundled archive.
+        for result in results where !incomingNumbers.contains(result.number) {
+            context.delete(result)
+        }
+
+        songBookVersion = Bundle.main.appBuild
     }
 }
 

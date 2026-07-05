@@ -25,11 +25,14 @@ struct SongsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack(alignment: .center, spacing: 12) {
-                    Text("\(songs[page.index].formattedNumber())").bold().monospaced().opacity(0.8)
-                    Text(songs[page.index].title)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                if songs.indices.contains(page.index) {
+                    let song = songs[page.index]
+                    HStack(alignment: .center, spacing: 12) {
+                        Text("\(song.formattedNumber())").bold().monospaced().opacity(0.8)
+                        Text(song.title)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
         }

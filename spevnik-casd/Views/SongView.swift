@@ -5,11 +5,15 @@ struct SongView: View {
     @AppStorage("org.valesoft.casd.breakingLines") private var showLineBreaks = true
     
     var song: Song
-    
+
+    private var sortedVerses: [SongVerse] {
+        song.verses.sorted(by: { $0.orderIndex < $1.orderIndex })
+    }
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(song.verses.sorted(by: { $0.orderIndex < $1.orderIndex }), id: \.hashValue) { verse in
+                ForEach(sortedVerses, id: \.orderIndex) { verse in
                     verseView(verse)
                 }
                 
