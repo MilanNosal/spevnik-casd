@@ -1,16 +1,25 @@
 import SwiftData
 
-/// A user-defined tag. Stored separately from built-in tags (which live as plain
-/// strings on `Song.builtInTags`) so that it survives the destructive song
-/// re-seed — the seed loop never references this relationship.
+/// A user-defined tag. Self-contained: it references songs by their stable
+/// `number` rather than a SwiftData relationship, so it is fully decoupled from
+/// the destructively re-seeded `Song` store and survives re-seeds.
+///
+/// Being self-contained (name + song numbers, trivially Codable) also makes it
+/// ready to mirror to iCloud via `NSUbiquitousKeyValueStore` later. That path
+/// keeps the SwiftData store local-only, so the unique-name constraint is fine.
 @Model
 final class UserTag {
     @Attribute(.unique)
     var name: String
-    var songs: [Song] = []
+    var songNumbers: [Int] = []
 
-    init(name: String) {
+    init(name: String, songNumbers: [Int] = []) {
         self.name = name
+        self.songNumbers = songNumbers
+    }
+
+    func contains(songNumber: Int) -> Bool {
+        songNumbers.contains(songNumber)
     }
 }
 

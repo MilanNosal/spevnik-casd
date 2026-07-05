@@ -57,7 +57,20 @@ struct MainView: View {
 
         let tags = activeTags
         if !tags.isEmpty {
-            result = result.filter { song in tags.allSatisfy { song.matches($0) } }
+            // Resolve the required tags once, up front, so the per-song filter is
+            // pure set/array membership: built-in names to match, and user-tag
+            // song-number sets for O(1) membership instead of scanning arrays.
+            let requiredBuiltIn = tags.filter { $0.kind == .builtIn }.map(\.name)
+            let requiredUserSets: [Set<Int>] = tags
+                .filter { $0.kind == .user }
+                .map { tag in
+                    userTags.first { $0.name == tag.name }.map { Set($0.songNumbers) } ?? []
+                }
+
+            result = result.filter { song in
+                requiredBuiltIn.allSatisfy(song.matchesBuiltIn)
+                    && requiredUserSets.allSatisfy { $0.contains(song.number) }
+            }
         }
 
         return result

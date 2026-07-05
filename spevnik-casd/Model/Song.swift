@@ -12,10 +12,6 @@ final class Song: Hashable {
     /// Built-in tags, re-seeded from the bundled JSON. Safe to overwrite on update.
     var builtInTags: [String] = []
 
-    /// User-defined tags. Never touched by the seed loop, so they survive re-seed.
-    @Relationship(deleteRule: .nullify, inverse: \UserTag.songs)
-    var userTags: [UserTag] = []
-
     init(number: Int, title: String, verses: [SongVerse], searchableCacheString: String, sheets: [String] = [], builtInTags: [String] = []) {
         self.number = number
         self.title = title
@@ -29,11 +25,9 @@ final class Song: Hashable {
         hasher.combine(number)
     }
 
-    /// Whether this song carries the given tag, checking the correct namespace.
-    func matches(_ tag: TagID) -> Bool {
-        switch tag.kind {
-        case .builtIn: return builtInTags.contains(tag.name)
-        case .user:    return userTags.contains { $0.name == tag.name }
-        }
+    /// Whether this song carries the given built-in tag. User-tag membership lives
+    /// on `UserTag.songNumbers` and is resolved by the caller.
+    func matchesBuiltIn(_ name: String) -> Bool {
+        builtInTags.contains(name)
     }
 }

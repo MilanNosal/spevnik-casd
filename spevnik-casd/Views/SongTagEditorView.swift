@@ -68,7 +68,7 @@ struct SongTagEditorView: View {
     
     @ViewBuilder
     private func row(for tag: UserTag) -> some View {
-        let isAssigned = song.userTags.contains { $0.name == tag.name }
+        let isAssigned = tag.contains(songNumber: song.number)
         Button {
             toggle(tag)
         } label: {
@@ -114,18 +114,17 @@ struct SongTagEditorView: View {
         newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Deletes a user tag globally. The `.nullify` inverse on `Song.userTags`
-    /// removes it from every song automatically.
+    /// Deletes a user tag globally, removing it from every song it was on.
     private func delete(_ tag: UserTag) {
         modelContext.delete(tag)
         tagPendingDeletion = nil
     }
 
     private func toggle(_ tag: UserTag) {
-        if let index = song.userTags.firstIndex(where: { $0.name == tag.name }) {
-            song.userTags.remove(at: index)
+        if let index = tag.songNumbers.firstIndex(of: song.number) {
+            tag.songNumbers.remove(at: index)
         } else {
-            song.userTags.append(tag)
+            tag.songNumbers.append(song.number)
         }
     }
 
@@ -141,8 +140,8 @@ struct SongTagEditorView: View {
             tag = UserTag(name: name)
             modelContext.insert(tag)
         }
-        if !song.userTags.contains(where: { $0.name == name }) {
-            song.userTags.append(tag)
+        if !tag.contains(songNumber: song.number) {
+            tag.songNumbers.append(song.number)
         }
         newTagName = ""
     }

@@ -81,9 +81,17 @@ struct spevnik_casdApp: App {
                 context.insert(Song(from: song))
             }
         }
-        // Remove songs that are no longer present in the bundled archive.
-        for result in results where !incomingNumbers.contains(result.number) {
+        // Remove songs that are no longer present in the bundled archive, and
+        // prune their numbers from user tags so no orphaned references linger.
+        let removedNumbers = Set(results.map(\.number)).subtracting(incomingNumbers)
+        for result in results where removedNumbers.contains(result.number) {
             context.delete(result)
+        }
+        if !removedNumbers.isEmpty {
+            let userTags = (try? context.fetch(FetchDescriptor<UserTag>())) ?? []
+            for tag in userTags where tag.songNumbers.contains(where: removedNumbers.contains) {
+                tag.songNumbers.removeAll(where: removedNumbers.contains)
+            }
         }
 
         reconcileBuiltInTags(from: songs, in: context)
@@ -134,6 +142,7 @@ extension Song {
         self.searchableCacheString = songStub.songTextDiacriticsInsensitive()
         self.sheets = songStub.sheets
         self.builtInTags = songStub.tags
-        // Note: userTags is intentionally never touched here so user data survives re-seed.
+        // Note: user tags live on `UserTag.songNumbers` in a separate store and are
+        // never touched here, so user data survives re-seed.
     }
 }
