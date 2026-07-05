@@ -14,25 +14,38 @@ struct MainView: View {
     
     @State private var isShowingSongDetail = false
     @State private var isShowingSettings = false
+    @State private var searchText = ""
     @StateObject private var page: Page = .first()
+
+    private var filteredSongs: [Song] {
+        let query = searchText
+            .folding(options: .diacriticInsensitive, locale: Locale.current)
+            .uppercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return songs }
+        return songs.filter { $0.searchableCacheString.contains(query) }
+    }
 
     var body: some View {
         VStack {
-            if !songs.isEmpty {
+            if songs.isEmpty {
+                ProgressView()
+                    .scaleEffect(1.3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            } else if filteredSongs.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            } else {
                 ScrollView {
                     LazyVStack {
-                        ForEach(songs) { song in
+                        ForEach(filteredSongs) { song in
                             row(song: song)
                         }
                     }
                     .padding(EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0))
                 }
-            } else {
-                ProgressView()
-                .scaleEffect(1.3)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
+        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Hľadať")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -65,14 +78,14 @@ struct MainView: View {
                 SettingsView()
             })
             .navigationDestination(isPresented: $isShowingSongDetail, destination: {
-                SongsView(page: page)
+                SongsView(songs: filteredSongs, page: page)
             })
     }
     
     @ViewBuilder
     private func row(song: Song) -> some View {
         Button {
-            guard let index = songs.firstIndex(of: song) else { return }
+            guard let index = filteredSongs.firstIndex(of: song) else { return }
             withAnimation(.none) {
                 page.update(.new(index: index))
             }

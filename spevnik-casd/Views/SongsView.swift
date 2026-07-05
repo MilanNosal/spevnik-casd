@@ -1,15 +1,9 @@
-import SwiftData
 import SwiftUI
 import SwiftUIPager
 
 struct SongsView: View {
-    @Environment(\.modelContext) private var modelContext
-    
-    @Query(FetchDescriptor<Song>(predicate: nil,
-                                 sortBy: [SortDescriptor<Song>(\.number)]),
-           animation: .spring(duration: 0.25))
-    private var songs: [Song]
-    
+    let songs: [Song]
+
     @ObservedObject var page: Page
     
     var body: some View {
