@@ -101,45 +101,24 @@ final class SheetStore {
     private func performDownload() async throws {
         let fm = FileManager.default
 
-        // Stream the archive to a temporary file, reporting progress.
-        let (bytes, response) = try await URLSession.shared.bytes(from: Self.archiveURL)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-            logger.error("Sheet download: unexpected HTTP status \(statusCode, privacy: .public)")
-            throw SheetStoreError.badResponse
-        }
-        let expected = response.expectedContentLength // may be -1 if unknown
-
-        let tempZip = fm.temporaryDirectory.appendingPathComponent("sheets-\(UUID().uuidString).zip")
-        fm.createFile(atPath: tempZip.path, contents: nil)
-        let handle = try FileHandle(forWritingTo: tempZip)
-        defer { try? handle.close() }
-
-        var buffer = Data()
-        buffer.reserveCapacity(1 << 16)
-        var received: Int64 = 0
-        for try await byte in bytes {
-            buffer.append(byte)
-            received += 1
-            if buffer.count >= (1 << 16) {
-                try handle.write(contentsOf: buffer)
-                buffer.removeAll(keepingCapacity: true)
-                if expected > 0 {
-                    let p = Double(received) / Double(expected)
-                    state = .downloading(progress: min(p, 1))
-                }
-                try Task.checkCancellation()
+        // Download the archive to a temp file via a download task, which writes
+        // straight to disk. (Streaming `URLSession.bytes` would iterate the ~45 MB
+        // one `UInt8` at a time — tens of millions of awaits.)
+        let downloader = ArchiveDownloader { [weak self] fraction in
+            Task { @MainActor in
+                guard let self, self.isDownloading else { return }
+                self.state = .downloading(progress: fraction)
             }
         }
-        if !buffer.isEmpty { try handle.write(contentsOf: buffer) }
-        try handle.close()
+        let tempZip = try await downloader.download(Self.archiveURL)
+        defer { try? fm.removeItem(at: tempZip) }
+
         try Task.checkCancellation()
 
         // Unzip into a fresh directory, then swap into place atomically.
         let staging = fm.temporaryDirectory.appendingPathComponent("sheets-unzip-\(UUID().uuidString)", isDirectory: true)
         try fm.createDirectory(at: staging, withIntermediateDirectories: true)
         try fm.unzipItem(at: tempZip, to: staging)
-        try? fm.removeItem(at: tempZip)
 
         // The zip may contain a top-level `sheets/` folder or the PNGs directly.
         let source = try resolvedContentRoot(in: staging)
@@ -175,6 +154,115 @@ enum SheetStoreError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .badResponse: return "Server neodpovedal správne."
+        }
+    }
+}
+
+/// Downloads a file to a temporary location via a `URLSessionDownloadTask`,
+/// reporting fractional progress. The task writes straight to disk, avoiding the
+/// per-byte iteration cost of streaming `URLSession.bytes`.
+///
+/// We drive an explicit `downloadTask(with:)` rather than the async
+/// `session.download(from:)` convenience method: the latter installs its own
+/// internal task delegate, so our `didWriteData` progress callback never fires.
+private final class ArchiveDownloader: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
+
+    private let onProgress: (Double) -> Void
+
+    // Assigned by `download(_:)` before `task.resume()`, so it is set before any
+    // delegate callback can fire; the callbacks then read and clear it on the
+    // serial delegate queue. This ordering — not a lock — is what keeps access
+    // safe under `@unchecked Sendable`.
+    private var continuation: CheckedContinuation<URL, Error>?
+
+    // Last fraction handed to `onProgress`. Read and written only on the serial
+    // delegate queue (from `didWriteData`), so it needs no synchronization. Used
+    // to throttle updates: `didWriteData` fires very frequently for a ~45 MB
+    // download, and each report otherwise spawns a MainActor Task.
+    private var lastReportedFraction = 0.0
+
+    init(onProgress: @escaping (Double) -> Void) {
+        self.onProgress = onProgress
+    }
+
+    /// Downloads `url` and returns a temp file URL the caller owns (and must
+    /// remove). Throws `CancellationError` if the surrounding task is cancelled,
+    /// or `SheetStoreError.badResponse` on a non-2xx status.
+    func download(_ url: URL) async throws -> URL {
+        lastReportedFraction = 0
+        // Serial delegate queue so `continuation` and the callbacks don't race.
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        let session = URLSession(configuration: .default, delegate: self, delegateQueue: queue)
+        defer { session.finishTasksAndInvalidate() }
+
+        let task = session.downloadTask(with: url)
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                self.continuation = continuation
+                task.resume()
+            }
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+    func urlSession(_ session: URLSession,
+                    downloadTask: URLSessionDownloadTask,
+                    didWriteData bytesWritten: Int64,
+                    totalBytesWritten: Int64,
+                    totalBytesExpectedToWrite: Int64) {
+        guard totalBytesExpectedToWrite > 0 else { return } // unknown length
+        let fraction = min(Double(totalBytesWritten) / Double(totalBytesExpectedToWrite), 1)
+        // Report only on a ≥2.5% advance (always report completion). This keeps the
+        // progress bar smooth while avoiding a MainActor Task per callback, and —
+        // since it only moves forward — the bar can't jump backward.
+        guard fraction - lastReportedFraction >= 0.015 || fraction >= 1 else { return }
+        lastReportedFraction = fraction
+        onProgress(fraction)
+    }
+
+    func urlSession(_ session: URLSession,
+                    downloadTask: URLSessionDownloadTask,
+                    didFinishDownloadingTo location: URL) {
+        guard let response = downloadTask.response as? HTTPURLResponse,
+              (200..<300).contains(response.statusCode) else {
+            let statusCode = (downloadTask.response as? HTTPURLResponse)?.statusCode ?? -1
+            logger.error("Sheet download: unexpected HTTP status \(statusCode, privacy: .public)")
+            continuation?.resume(throwing: SheetStoreError.badResponse)
+            continuation = nil
+            return
+        }
+
+        // `location` is deleted the moment this callback returns, so move it to a
+        // stable spot the caller can hand off to unzip — synchronously, here.
+        let fm = FileManager.default
+        let dest = fm.temporaryDirectory.appendingPathComponent("sheets-\(UUID().uuidString).zip")
+        do {
+            try fm.moveItem(at: location, to: dest)
+            continuation?.resume(returning: dest)
+        } catch {
+            continuation?.resume(throwing: error)
+        }
+        continuation = nil
+    }
+
+    func urlSession(_ session: URLSession,
+                    task: URLSessionTask,
+                    didCompleteWithError error: Error?) {
+        // A successful finish already resumed via `didFinishDownloadingTo`, which
+        // clears the continuation; only an error path remains to handle here.
+        guard let continuation else { return }
+        self.continuation = nil
+        if let urlError = error as? URLError, urlError.code == .cancelled {
+            // Map URLSession's cancellation to the cooperative-cancellation error
+            // the caller already handles as a user-initiated cancel.
+            continuation.resume(throwing: CancellationError())
+        } else if let error {
+            continuation.resume(throwing: error)
+        } else {
+            // No error and no file — shouldn't happen, but don't leak the await.
+            continuation.resume(throwing: SheetStoreError.badResponse)
         }
     }
 }

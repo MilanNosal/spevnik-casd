@@ -45,47 +45,81 @@ private struct ZoomableImage: View {
 
     let url: URL
 
+    @State private var image: UIImage?
+    @State private var didFail = false
+
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
     var body: some View {
-        if let image = UIImage(contentsOfFile: url.path) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .scaleEffect(scale)
-                .offset(offset)
-                .gesture(
-                    MagnificationGesture()
-                        .onChanged { value in
-                            scale = min(max(lastScale * value, 1), 5)
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(scale)
+                    .offset(offset)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                scale = min(max(lastScale * value, 1), 5)
+                            }
+                            .onEnded { _ in
+                                lastScale = scale
+                                if scale <= 1 { withAnimation { resetPan() } }
+                            }
+                    )
+                    .simultaneousGesture(
+                        DragGesture()
+                            .onChanged { value in
+                                guard scale > 1 else { return }
+                                offset = CGSize(width: lastOffset.width + value.translation.width,
+                                                height: lastOffset.height + value.translation.height)
+                            }
+                            .onEnded { _ in lastOffset = offset }
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation {
+                            if scale > 1 { scale = 1; lastScale = 1; resetPan() }
+                            else { scale = 2.5; lastScale = 2.5 }
                         }
-                        .onEnded { _ in
-                            lastScale = scale
-                            if scale <= 1 { withAnimation { resetPan() } }
-                        }
-                )
-                .simultaneousGesture(
-                    DragGesture()
-                        .onChanged { value in
-                            guard scale > 1 else { return }
-                            offset = CGSize(width: lastOffset.width + value.translation.width,
-                                            height: lastOffset.height + value.translation.height)
-                        }
-                        .onEnded { _ in lastOffset = offset }
-                )
-                .onTapGesture(count: 2) {
-                    withAnimation {
-                        if scale > 1 { scale = 1; lastScale = 1; resetPan() }
-                        else { scale = 2.5; lastScale = 2.5 }
                     }
-                }
-        } else {
-            ContentUnavailableView("Obrázok sa nepodarilo načítať",
-                                   systemImage: "exclamationmark.triangle")
+            } else if didFail {
+                ContentUnavailableView("Obrázok sa nepodarilo načítať",
+                                       systemImage: "exclamationmark.triangle")
+            } else {
+                ProgressView()
+            }
         }
+        // Load and decode off the main actor. `.task(id:)` re-runs when the page's
+        // URL changes and cancels the prior load as `TabView` reuses the view.
+        .task(id: url) {
+            image = nil
+            didFail = false
+            let loaded = await Self.loadImage(at: url)
+            guard !Task.isCancelled else { return }
+            if let loaded { image = loaded } else { didFail = true }
+        }
+    }
+
+    /// Loads and fully decodes the image off the main thread. `UIImage(contentsOfFile:)`
+    /// defers decoding to first draw, so we force it here by re-drawing into a
+    /// bitmap. (Using `preparingForDisplay()` instead routes through an ImageIO
+    /// path that logs a benign "-17102 decompressing image -- possibly corrupt"
+    /// for some of these PNGs; redrawing decodes cleanly without the noise.)
+    private static func loadImage(at url: URL) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            guard let image = UIImage(contentsOfFile: url.path) else { return nil }
+            let format = UIGraphicsImageRendererFormat.preferred()
+            format.scale = image.scale
+            format.opaque = false
+            let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
+            return renderer.image { _ in
+                image.draw(at: .zero)
+            }
+        }.value
     }
 
     private func resetPan() {

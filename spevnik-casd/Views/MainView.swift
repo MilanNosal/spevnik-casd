@@ -77,18 +77,21 @@ struct MainView: View {
     }
 
     var body: some View {
+        // Evaluate the filter once per render so every consumer below (the empty
+        // check, the list, and the pager) works off one consistent snapshot.
+        let filtered = filteredSongs
         VStack {
             if songs.isEmpty {
                 ProgressView()
                     .scaleEffect(1.3)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            } else if filteredSongs.isEmpty {
+            } else if filtered.isEmpty {
                 ContentUnavailableView.search(text: searchText)
             } else {
                 ScrollView {
                     LazyVStack {
-                        ForEach(filteredSongs) { song in
-                            row(song: song)
+                        ForEach(filtered) { song in
+                            row(song: song, in: filtered)
                         }
                     }
                     .padding(EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0))
@@ -139,25 +142,25 @@ struct MainView: View {
                           selectedTags: $selectedTags)
         }
         .background {
-            navigationLinks()
+            navigationLinks(filtered)
         }
     }
-    
+
     @ViewBuilder
-    private func navigationLinks() -> some View {
+    private func navigationLinks(_ filtered: [Song]) -> some View {
         Spacer()
             .navigationDestination(isPresented: $isShowingSettings, destination: {
                 SettingsView()
             })
             .navigationDestination(isPresented: $isShowingSongDetail, destination: {
-                SongsView(songs: filteredSongs, page: page)
+                SongsView(songs: filtered, page: page)
             })
     }
-    
+
     @ViewBuilder
-    private func row(song: Song) -> some View {
+    private func row(song: Song, in filtered: [Song]) -> some View {
         Button {
-            guard let index = filteredSongs.firstIndex(of: song) else { return }
+            guard let index = filtered.firstIndex(of: song) else { return }
             withAnimation(.none) {
                 page.update(.new(index: index))
             }
