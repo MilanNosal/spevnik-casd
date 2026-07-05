@@ -25,6 +25,7 @@ struct SongsView: View {
                         Text("\(song.formattedNumber())").bold().monospaced().opacity(0.8)
                         Text(song.title)
                             .fontWeight(.semibold)
+                            .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }

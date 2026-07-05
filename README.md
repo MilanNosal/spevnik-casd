@@ -10,7 +10,7 @@ list, then swipe through songs in a full-screen pager.
 ## Requirements
 
 - Xcode 15 or later
-- iOS 17 or later (SwiftData)
+- iOS 18 or later (SwiftData)
 
 ## Contact
 

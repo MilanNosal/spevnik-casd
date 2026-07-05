@@ -23,12 +23,14 @@ struct spevnik_casdApp: App {
     @AppStorage("org.valesoft.songbook.version") private var songBookVersion: String?
 
     @State private var loadFailed = false
+    @State private var sheetStore = SheetStore()
 
     var body: some Scene {
         WindowGroup {
             NavigationStack {
                 MainView()
             }
+            .environment(sheetStore)
             .task {
                 updateSongBookIfNewUpdate()
             }
@@ -95,9 +97,10 @@ extension Song {
         self.init(number: songStub.number,
                   title: songStub.title,
                   verses: verses,
-                  searchableCacheString: songStub.songTextDiacriticsInsensitive())
+                  searchableCacheString: songStub.songTextDiacriticsInsensitive(),
+                  sheets: songStub.sheets)
     }
-    
+
     func update(from songStub: SongStub) {
         var verses: [SongVerse] = []
         for (index, verseStub) in songStub.verses.enumerated() {
@@ -106,5 +109,6 @@ extension Song {
         self.title = songStub.title
         self.verses = verses
         self.searchableCacheString = songStub.songTextDiacriticsInsensitive()
+        self.sheets = songStub.sheets
     }
 }

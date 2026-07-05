@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B65FCE92FFA527D00FF8E86 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 3B65FCE82FFA527D00FF8E86 /* ZIPFoundation */; };
+		3B65FCEB2FFA5B4600FF8E86 /* SheetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCEA2FFA5B4600FF8E86 /* SheetStore.swift */; };
+		3B65FCED2FFA5B5900FF8E86 /* SheetMusicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */; };
 		9907545E2BEE771A00A2DC5B /* SwiftUIPager in Frameworks */ = {isa = PBXBuildFile; productRef = 9907545D2BEE771A00A2DC5B /* SwiftUIPager */; };
 		990754602BEE774D00A2DC5B /* SongsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9907545F2BEE774D00A2DC5B /* SongsView.swift */; };
 		990754622BEE78A600A2DC5B /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 990754612BEE78A600A2DC5B /* SongView.swift */; };
@@ -23,6 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B65FCEA2FFA5B4600FF8E86 /* SheetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetStore.swift; sourceTree = "<group>"; };
+		3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetMusicView.swift; sourceTree = "<group>"; };
 		9907545F2BEE774D00A2DC5B /* SongsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongsView.swift; sourceTree = "<group>"; };
 		990754612BEE78A600A2DC5B /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		9950017C2BCF03D000B50F76 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -44,6 +49,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9907545E2BEE771A00A2DC5B /* SwiftUIPager in Frameworks */,
+				3B65FCE92FFA527D00FF8E86 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +61,7 @@
 			children = (
 				996A2EFB2BCDA2A0008FA3F6 /* MainView.swift */,
 				9950017C2BCF03D000B50F76 /* SettingsView.swift */,
+				3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */,
 				9907545F2BEE774D00A2DC5B /* SongsView.swift */,
 				990754612BEE78A600A2DC5B /* SongView.swift */,
 			);
@@ -66,6 +73,7 @@
 			children = (
 				996A2EFE2BCDA5C9008FA3F6 /* Bundle++.swift */,
 				996A2F042BCDB00E008FA3F6 /* JSONSongsParsing.swift */,
+				3B65FCEA2FFA5B4600FF8E86 /* SheetStore.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -143,6 +151,7 @@
 			name = "spevnik-casd";
 			packageProductDependencies = (
 				9907545D2BEE771A00A2DC5B /* SwiftUIPager */,
+				3B65FCE82FFA527D00FF8E86 /* ZIPFoundation */,
 			);
 			productName = "spevnik-casd";
 			productReference = 99FC29242BCD9CC600736C65 /* spevnik-casd.app */;
@@ -174,6 +183,7 @@
 			mainGroup = 99FC291B2BCD9CC600736C65;
 			packageReferences = (
 				9907545C2BEE771A00A2DC5B /* XCRemoteSwiftPackageReference "SwiftUIPager" */,
+				3B65FCE72FFA527D00FF8E86 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = 99FC29252BCD9CC600736C65 /* Products */;
 			projectDirPath = "";
@@ -205,12 +215,14 @@
 				9950017D2BCF03D000B50F76 /* SettingsView.swift in Sources */,
 				996A2EF72BCD9F69008FA3F6 /* SongVerse.swift in Sources */,
 				996A2F052BCDB00E008FA3F6 /* JSONSongsParsing.swift in Sources */,
+				3B65FCED2FFA5B5900FF8E86 /* SheetMusicView.swift in Sources */,
 				996A2EFC2BCDA2A0008FA3F6 /* MainView.swift in Sources */,
 				990754602BEE774D00A2DC5B /* SongsView.swift in Sources */,
 				99FC29282BCD9CC600736C65 /* spevnik_casdApp.swift in Sources */,
 				996A2EF52BCD9F3B008FA3F6 /* Song.swift in Sources */,
 				990754622BEE78A600A2DC5B /* SongView.swift in Sources */,
 				996A2EFF2BCDA5C9008FA3F6 /* Bundle++.swift in Sources */,
+				3B65FCEB2FFA5B4600FF8E86 /* SheetStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +354,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"spevnik-casd/Preview Content\"";
 				DEVELOPMENT_TEAM = D89CSBBCFJ;
 				ENABLE_PREVIEWS = YES;
@@ -354,11 +366,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.valesoft.casd.spevnik-casd";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -373,7 +386,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"spevnik-casd/Preview Content\"";
 				DEVELOPMENT_TEAM = D89CSBBCFJ;
 				ENABLE_PREVIEWS = YES;
@@ -385,11 +398,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.valesoft.casd.spevnik-casd";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -422,6 +436,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3B65FCE72FFA527D00FF8E86 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.20;
+			};
+		};
 		9907545C2BEE771A00A2DC5B /* XCRemoteSwiftPackageReference "SwiftUIPager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/fermoya/SwiftUIPager.git";
@@ -433,6 +455,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3B65FCE82FFA527D00FF8E86 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B65FCE72FFA527D00FF8E86 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
 		9907545D2BEE771A00A2DC5B /* SwiftUIPager */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9907545C2BEE771A00A2DC5B /* XCRemoteSwiftPackageReference "SwiftUIPager" */;
