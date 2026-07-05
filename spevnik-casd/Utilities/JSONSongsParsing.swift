@@ -14,12 +14,14 @@ struct SongStub: Codable {
     var title: String
     var verses: [VerseStub]
     var sheets: [String]
+    var tags: [String]
 
-    init(number: Int, title: String, verses: [VerseStub], sheets: [String] = []) {
+    init(number: Int, title: String, verses: [VerseStub], sheets: [String] = [], tags: [String] = []) {
         self.number = number
         self.title = title
         self.verses = verses
         self.sheets = sheets
+        self.tags = tags
     }
 
     init(from decoder: Decoder) throws {
@@ -27,8 +29,9 @@ struct SongStub: Codable {
         self.number = try container.decode(Int.self, forKey: .number)
         self.title = try container.decode(String.self, forKey: .title)
         self.verses = try container.decode([VerseStub].self, forKey: .verses)
-        // `sheets` was added later; tolerate archives that predate it.
+        // `sheets` and `tags` were added later; tolerate archives that predate them.
         self.sheets = try container.decodeIfPresent([String].self, forKey: .sheets) ?? []
+        self.tags = try container.decodeIfPresent([String].self, forKey: .tags) ?? []
     }
 
     func songTextDiacriticsInsensitive() -> String {

@@ -10,6 +10,10 @@
 		3B65FCE92FFA527D00FF8E86 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 3B65FCE82FFA527D00FF8E86 /* ZIPFoundation */; };
 		3B65FCEB2FFA5B4600FF8E86 /* SheetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCEA2FFA5B4600FF8E86 /* SheetStore.swift */; };
 		3B65FCED2FFA5B5900FF8E86 /* SheetMusicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */; };
+		3B65FCEF2FFA708900FF8E86 /* UserTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCEE2FFA708900FF8E86 /* UserTag.swift */; };
+		3B65FCF12FFA718200FF8E86 /* TagFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCF02FFA718200FF8E86 /* TagFilterView.swift */; };
+		3B65FCF32FFA73B100FF8E86 /* SongTagEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCF22FFA73B100FF8E86 /* SongTagEditorView.swift */; };
+		3B65FCF52FFA848000FF8E86 /* BuiltInTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B65FCF42FFA848000FF8E86 /* BuiltInTag.swift */; };
 		9907545E2BEE771A00A2DC5B /* SwiftUIPager in Frameworks */ = {isa = PBXBuildFile; productRef = 9907545D2BEE771A00A2DC5B /* SwiftUIPager */; };
 		990754602BEE774D00A2DC5B /* SongsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9907545F2BEE774D00A2DC5B /* SongsView.swift */; };
 		990754622BEE78A600A2DC5B /* SongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 990754612BEE78A600A2DC5B /* SongView.swift */; };
@@ -28,6 +32,10 @@
 /* Begin PBXFileReference section */
 		3B65FCEA2FFA5B4600FF8E86 /* SheetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetStore.swift; sourceTree = "<group>"; };
 		3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetMusicView.swift; sourceTree = "<group>"; };
+		3B65FCEE2FFA708900FF8E86 /* UserTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTag.swift; sourceTree = "<group>"; };
+		3B65FCF02FFA718200FF8E86 /* TagFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFilterView.swift; sourceTree = "<group>"; };
+		3B65FCF22FFA73B100FF8E86 /* SongTagEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongTagEditorView.swift; sourceTree = "<group>"; };
+		3B65FCF42FFA848000FF8E86 /* BuiltInTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInTag.swift; sourceTree = "<group>"; };
 		9907545F2BEE774D00A2DC5B /* SongsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongsView.swift; sourceTree = "<group>"; };
 		990754612BEE78A600A2DC5B /* SongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongView.swift; sourceTree = "<group>"; };
 		9950017C2BCF03D000B50F76 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -63,7 +71,9 @@
 				9950017C2BCF03D000B50F76 /* SettingsView.swift */,
 				3B65FCEC2FFA5B5900FF8E86 /* SheetMusicView.swift */,
 				9907545F2BEE774D00A2DC5B /* SongsView.swift */,
+				3B65FCF22FFA73B100FF8E86 /* SongTagEditorView.swift */,
 				990754612BEE78A600A2DC5B /* SongView.swift */,
+				3B65FCF02FFA718200FF8E86 /* TagFilterView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -119,8 +129,10 @@
 		99FC29372BCD9D2C00736C65 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				3B65FCF42FFA848000FF8E86 /* BuiltInTag.swift */,
 				996A2EF42BCD9F3B008FA3F6 /* Song.swift */,
 				996A2EF62BCD9F69008FA3F6 /* SongVerse.swift */,
+				3B65FCEE2FFA708900FF8E86 /* UserTag.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -219,10 +231,14 @@
 				996A2EFC2BCDA2A0008FA3F6 /* MainView.swift in Sources */,
 				990754602BEE774D00A2DC5B /* SongsView.swift in Sources */,
 				99FC29282BCD9CC600736C65 /* spevnik_casdApp.swift in Sources */,
+				3B65FCEF2FFA708900FF8E86 /* UserTag.swift in Sources */,
 				996A2EF52BCD9F3B008FA3F6 /* Song.swift in Sources */,
 				990754622BEE78A600A2DC5B /* SongView.swift in Sources */,
 				996A2EFF2BCDA5C9008FA3F6 /* Bundle++.swift in Sources */,
+				3B65FCF52FFA848000FF8E86 /* BuiltInTag.swift in Sources */,
+				3B65FCF32FFA73B100FF8E86 /* SongTagEditorView.swift in Sources */,
 				3B65FCEB2FFA5B4600FF8E86 /* SheetStore.swift in Sources */,
+				3B65FCF12FFA718200FF8E86 /* TagFilterView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -354,7 +370,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"spevnik-casd/Preview Content\"";
 				DEVELOPMENT_TEAM = D89CSBBCFJ;
 				ENABLE_PREVIEWS = YES;
@@ -386,7 +402,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"spevnik-casd/Preview Content\"";
 				DEVELOPMENT_TEAM = D89CSBBCFJ;
 				ENABLE_PREVIEWS = YES;

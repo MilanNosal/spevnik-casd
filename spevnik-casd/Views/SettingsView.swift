@@ -29,7 +29,6 @@ struct SettingsView: View {
             Spacer()
         }
         .padding()
-        .tint(.green)
     }
 
     @ViewBuilder

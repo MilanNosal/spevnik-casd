@@ -10,6 +10,8 @@ struct spevnik_casdApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Song.self,
+            UserTag.self,
+            BuiltInTag.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -84,7 +86,27 @@ struct spevnik_casdApp: App {
             context.delete(result)
         }
 
+        reconcileBuiltInTags(from: songs, in: context)
+
         songBookVersion = Bundle.main.appBuild
+    }
+
+    /// Rebuilds the `BuiltInTag` catalog to match the distinct set of tags in the
+    /// bundled songs. Runs only during the re-seed, so the filter UI can list all
+    /// built-in tags without scanning every song.
+    @MainActor
+    private func reconcileBuiltInTags(from songs: [SongStub], in context: ModelContext) {
+        let incomingNames = Set(songs.flatMap(\.tags))
+
+        let existing = (try? context.fetch(FetchDescriptor<BuiltInTag>())) ?? []
+        let existingNames = Set(existing.map(\.name))
+
+        for tag in existing where !incomingNames.contains(tag.name) {
+            context.delete(tag)
+        }
+        for name in incomingNames where !existingNames.contains(name) {
+            context.insert(BuiltInTag(name: name))
+        }
     }
 }
 
@@ -98,7 +120,8 @@ extension Song {
                   title: songStub.title,
                   verses: verses,
                   searchableCacheString: songStub.songTextDiacriticsInsensitive(),
-                  sheets: songStub.sheets)
+                  sheets: songStub.sheets,
+                  builtInTags: songStub.tags)
     }
 
     func update(from songStub: SongStub) {
@@ -110,5 +133,7 @@ extension Song {
         self.verses = verses
         self.searchableCacheString = songStub.songTextDiacriticsInsensitive()
         self.sheets = songStub.sheets
+        self.builtInTags = songStub.tags
+        // Note: userTags is intentionally never touched here so user data survives re-seed.
     }
 }

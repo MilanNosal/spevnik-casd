@@ -11,19 +11,56 @@ struct MainView: View {
                                  sortBy: [SortDescriptor<Song>(\.number)]),
            animation: .spring(duration: 0.25))
     private var songs: [Song]
-    
+
+    @Query(sort: \UserTag.name)
+    private var userTags: [UserTag]
+
+    @Query(sort: \BuiltInTag.name)
+    private var builtInTags: [BuiltInTag]
+
     @State private var isShowingSongDetail = false
     @State private var isShowingSettings = false
+    @State private var isShowingFilter = false
     @State private var searchText = ""
+    @State private var selectedTags: Set<TagID> = []
     @StateObject private var page: Page = .first()
 
+    /// Built-in tag names from the precomputed catalog.
+    private var builtInTagNames: [String] {
+        builtInTags.map(\.name)
+    }
+
+    private var userTagNames: [String] {
+        userTags.map(\.name)
+    }
+
+    /// Selected tags that still correspond to an available tag. Guards against a
+    /// stale selection (e.g. a built-in tag removed by a re-seed) silently
+    /// filtering the list down to nothing.
+    private var activeTags: Set<TagID> {
+        let available: Set<TagID> =
+            Set(builtInTagNames.map { TagID(kind: .builtIn, name: $0) })
+            .union(userTagNames.map { TagID(kind: .user, name: $0) })
+        return selectedTags.intersection(available)
+    }
+
     private var filteredSongs: [Song] {
+        var result = songs
+
         let query = searchText
             .folding(options: .diacriticInsensitive, locale: Locale.current)
             .uppercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return songs }
-        return songs.filter { $0.searchableCacheString.contains(query) }
+        if !query.isEmpty {
+            result = result.filter { $0.searchableCacheString.contains(query) }
+        }
+
+        let tags = activeTags
+        if !tags.isEmpty {
+            result = result.filter { song in tags.allSatisfy { song.matches($0) } }
+        }
+
+        return result
     }
 
     var body: some View {
@@ -64,8 +101,30 @@ struct MainView: View {
                 Text("Spievajme Hospodinovi")
                     .bold()
             }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isShowingFilter = true
+                } label: {
+                    Image(systemName: activeTags.isEmpty
+                          ? "line.3.horizontal.decrease.circle"
+                          : "line.3.horizontal.decrease.circle.fill")
+                        .renderingMode(.template)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                }
+                .frame(width: 44, height: 44)
+                .tint(activeTags.isEmpty
+                      ? (colorScheme == .dark ? Color.white : Color.black)
+                      : Color.green)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isShowingFilter) {
+            TagFilterView(builtInTags: builtInTagNames,
+                          userTags: userTagNames,
+                          selectedTags: $selectedTags)
+        }
         .background {
             navigationLinks()
         }

@@ -9,6 +9,7 @@ struct SongView: View {
     var song: Song
 
     @State private var isShowingSheets = false
+    @State private var isShowingTagEditor = false
 
     private var sortedVerses: [SongVerse] {
         song.verses.sorted(by: { $0.orderIndex < $1.orderIndex })
@@ -28,17 +29,38 @@ struct SongView: View {
                 Spacer()
             }
             .padding(EdgeInsets(top: 12, leading: 4, bottom: 12, trailing: 4))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .contentShape(Rectangle())
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .contentShape(Rectangle())
         .overlay(alignment: .bottomTrailing) {
-            if hasSheets {
-                sheetButton
+            VStack(spacing: 12) {
+                tagButton
+                if hasSheets {
+                    sheetButton
+                }
             }
+            .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 16))
         }
-        .sheet(isPresented: $isShowingSheets) {
+        .fullScreenCover(isPresented: $isShowingSheets) {
             SheetMusicView(title: song.title, sheetNames: song.sheets)
         }
+        .sheet(isPresented: $isShowingTagEditor) {
+            SongTagEditorView(song: song)
+        }
+    }
+
+    private var tagButton: some View {
+        Button {
+            isShowingTagEditor = true
+        } label: {
+            Image(systemName: "tag")
+                .font(.title2)
+                .padding(14)
+                .background(.thinMaterial, in: Circle())
+        }
+        .accessibilityLabel("Upraviť témy")
     }
 
     private var sheetButton: some View {
@@ -50,8 +72,6 @@ struct SongView: View {
                 .padding(14)
                 .background(.thinMaterial, in: Circle())
         }
-        .tint(.green)
-        .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 16))
         .accessibilityLabel("Zobraziť noty")
     }
     
